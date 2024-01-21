@@ -1,0 +1,21 @@
+.spin-div {
+  position: absolute;
+  height: 90vh;
+}
+
+.spinner {
+  position: absolute; /*for placing spinner at center*/
+  top: 50%;
+  left: 50%;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: conic-gradient(#0000 10%, #474bff);
+  animation: spinner-zp9dbg 1s infinite linear;
+}
+
+@keyframes spinner-zp9dbg {
+  to {
+    transform: rotate(1turn);
+  }
+}
