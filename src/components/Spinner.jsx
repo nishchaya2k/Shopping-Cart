@@ -3,8 +3,8 @@ import "./Spinner.css"
 
 const Spinner = () => {
   return (
-    <div>
-      <div className='spin-div  spinner'></div>
+    <div className = "spin-div">
+      <div className='spinner'></div>
     </div>
   )
 }
