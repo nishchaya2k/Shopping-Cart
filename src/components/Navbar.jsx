@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 const Navbar = () => {
 
   //fetching the current state of cart
-  const { cart } = useSelector((state) => state.cart);
+  const { cart } = useSelector((state) => state);
 
   return (
     <div >
