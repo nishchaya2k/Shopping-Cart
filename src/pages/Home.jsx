@@ -132,7 +132,7 @@ const Home = () => {
   const unCheckButton = () => {
     setCheckCount((checkCount) => checkCount + 1);
 
-    if (checkCount % 2 == 0) {
+    if (checkCount % 2 === 0) {
       setSelectedCategory(null);
       setCategoryData(null);
       setCheckCount(0);
