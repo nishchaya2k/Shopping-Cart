@@ -1,0 +1,22 @@
+.mobileView {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 18px;
+  width: 100%;
+  background-image: linear-gradient(to right, white, rgb(244, 244, 244));
+  border-radius: 5px;
+  padding: 12px;
+  border-right: 1px solid rgb(226, 221, 221);
+  border-bottom: 1px solid rgb(199, 195, 195);
+  animation: mobileMenu 0.5s ease forwards;
+}
+
+@keyframes mobileMenu {
+  0% {
+    transform: translateY(130%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

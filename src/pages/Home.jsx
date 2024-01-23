@@ -6,7 +6,10 @@ import { useSelector } from "react-redux";
 import { sortData } from "../functions/sort";
 import SliderButton from "../components/SliderOption";
 import FilterCategory from "../components/FilterCategory";
-
+import { HiOutlineSearch } from "react-icons/hi";
+import { SlMenu } from "react-icons/sl";
+import { VscChromeClose } from "react-icons/vsc";
+import "./Home.css"
 
 
 const sortbyData = [
@@ -23,7 +26,7 @@ const categories = [
 
 
 const Home = () => {
-  const data = useSelector((state) => {       //now data have reference of initial states, but we need 'posts' initial state data
+  const data = useSelector((state) => {
     console.log("state..", state.app);
     return state.app;
   });
@@ -139,19 +142,30 @@ const Home = () => {
     }
 
   }
-  // Filter data based on the selected category
   //............................................................................. 
 
+  const [mobileMenu, setMobileMenu] = useState(false);   //for sidebar
+  const openMobileMenu = () => {
+    setMobileMenu(true)
+  }
+
+  useEffect(() => {
+    // Disable interactions with the content when the mobile menu is active
+    const contentContainer = document.getElementById("content-container");
+    if (contentContainer) {
+      contentContainer.style.pointerEvents = mobileMenu ? "none" : "auto";
+    }
+  }, [mobileMenu]);
 
   return (
     <div className="flex justify-center">
-      <div className="flex flex-col-reverse md:flex-row items-start gap-8 relative my-12">
+      <div className={`flex flex-col-reverse md:flex-row items-start gap-8 relative my-12`}>
         {
           data?.loading ? <Spinner /> :
             data?.posts?.length > 0 ?
               (
-                <div className="w-11.5/12  grid xl:grid-cols-4 xl:max-w-[1111px] gap-x-8 gap-y-20 
-                            xs: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:max-w-[800px] sm:max-w-[600px] max-w-[300px] ">
+                <div id="content-container" className={`w-11.5/12  grid xl:grid-cols-4 xl:max-w-[1111px] gap-x-8 gap-y-20 
+                            xs: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:max-w-[800px] sm:max-w-[600px] max-w-[300px] ${mobileMenu ? 'filter blur-sm' : ''}`}>
                   {
                     (sortedData ?? sliderData ?? categoryData) ?
                       (
@@ -173,17 +187,23 @@ const Home = () => {
               </div>
         }
 
-        {/* Features */}
+        {/* Features ->  for large screen */}
         {
           !data?.loading &&
-          <div className="flex flex-col items-start gap-[6.5rem]">
 
+          <div className={`md:flex flex-col items-start gap-[6.5rem] ${mobileMenu ? 'mobileView' : 'hidden'}`}>
             <SortOption sortby={sortby} sortbyData={sortbyData} onChange={onChange} />
             <SliderButton priceRange={priceRange} handleSliderChange={handleSliderChange} resetSlider={resetSlider} heading="Price Range" />
             <FilterCategory selectedCategory={selectedCategory} handleCategoryChange={handleCategoryChange} unCheckButton={unCheckButton} categories={categories} />
           </div>
-
         }
+
+        {/* Feature ->  for small screen */}
+        <div className={`md:hidden  ${mobileMenu ? 'w-full flex justify-end' : ''}`}>
+          {mobileMenu ?
+            (<VscChromeClose onClick={() => setMobileMenu(false)} className="cursor-pointer" />) :
+            (<SlMenu onClick={openMobileMenu} className="cursor-pointer" />)}  { /*we have open the sidebar  */}
+        </div>
 
       </div>
     </div>
