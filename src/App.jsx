@@ -7,7 +7,6 @@ import Cart from "./pages/Cart"
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllData } from "./redux/Slices/DataSlice";
 
-
 const App = () => {
 
   /*const API_URL = "https://fakestoreapi.com/products";
@@ -55,6 +54,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
         {/* <Route path="/" element={<Home loading={loading} posts={posts} setPosts={setPosts} />} /> */}
         <Route path="/cart" element={<Cart />} />
+        {/* <Route path="/product/:id" element={<SingleProduct />} /> */}
       </Routes>
     </div>)
 };

@@ -8,7 +8,7 @@ import CartItem from "../components/CartItem";
 
 const Cart = () => {
 
-  const { cart } = useSelector((state) => state);
+  const { cart } = useSelector((state) => state.cart);
   console.log("Printing Cart");
   console.log(cart);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -69,3 +69,8 @@ const Cart = () => {
 };
 
 export default Cart;
+
+
+/*The reduce method in JavaScript is used to transform an array into a single value.
+It iterates over each element of the array, applying a callback function that you 
+provide, and accumulating the result into a single value.*/

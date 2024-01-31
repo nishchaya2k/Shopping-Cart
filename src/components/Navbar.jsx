@@ -5,7 +5,7 @@ import { NavLink } from "react-router-dom";
 const Navbar = () => {
 
   //fetching the current state of cart
-  const { cart } = useSelector((state) => state);
+  const { cart } = useSelector((state) => state.cart);
 
   return (
     <div >
@@ -13,7 +13,8 @@ const Navbar = () => {
 
         <NavLink to="/">
           <div className="ml-5">
-            <img src="../logo.png" className="h-14" />
+            <img src="../shopping-cart.png" className="h-8 hidden sm:block " />
+            <img src="../shopping-cart2.png" className="h-16 sm:hidden" />
           </div>
         </NavLink>
 

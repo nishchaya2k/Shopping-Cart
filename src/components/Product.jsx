@@ -1,10 +1,14 @@
 import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { add, remove } from "../redux/Slices/CartSlice";
+// import { useNavigate } from "react-router-dom";
 
-const Product = ({ post }) => {
 
-  const { cart } = useSelector((state) => state);
+const Product = ({ id, post }) => {
+
+  // const navigate = useNavigate();
+
+  const { cart } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
 
   const addToCart = () => {
@@ -20,6 +24,7 @@ const Product = ({ post }) => {
   return (
     <div className=" bg-zinc-100 flex flex-col items-center justify-center shadow-md  gap-3 p-4 rounded-xl text-slate-700
     hover:shadow-2xl hover:shadow-slate-800 hover:drop-shadow-2xl hover:scale-110 transition-all duration-500">
+      {/* onClick={() => navigate("/product/" + id)} */}
       <div>
         <p className="text-gray-700 font-semibold text-lg text-left truncate w-52 px mt-1 ">{post.title}</p>
       </div>
