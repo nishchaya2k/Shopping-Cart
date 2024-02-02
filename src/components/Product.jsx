@@ -1,38 +1,46 @@
 import { toast } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { add, remove } from "../redux/Slices/CartSlice";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import StarReviews from "./StarReviews";
 
 
 const Product = ({ id, post }) => {
 
-  // const navigate = useNavigate();
+
+  const [quantity, setQuantity] = useState(1);
+
+  const navigate = useNavigate();
 
   const { cart } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
 
   const addToCart = () => {
-    dispatch(add(post));
+    dispatch(add({ post, quantity }));
     toast.success("Item added to Cart");
   }
 
   const removeFromCart = () => {
-    dispatch(remove(post.id));
+    dispatch(remove({ post, quantity }));
     toast.error("Item removed from Cart");
   }
 
   return (
     <div className=" bg-zinc-100 flex flex-col items-center justify-center shadow-md  gap-3 p-4 rounded-xl text-slate-700
     hover:shadow-2xl hover:shadow-slate-800 hover:drop-shadow-2xl hover:scale-110 transition-all duration-500">
-      {/* onClick={() => navigate("/product/" + id)} */}
       <div>
         <p className="text-gray-700 font-semibold text-lg text-left truncate w-52 px mt-1 ">{post.title}</p>
       </div>
-      <div>
-        <p className="w-44 h-16 min-h-fit text-gray-400 font-normal text-[10px] text-left">{post.description.split(" ").slice(0, 10).join(" ") + "..."}</p>
+
+      <div className="">
+        <p className="w-44 h-12 min-h-fit text-gray-400 font-normal text-[10px] text-left">{post.description.split(" ").slice(0, 10).join(" ") + "..."}</p>
       </div>
-      <div className=" h-[180px] w-[160px]  mt-4 bg-zinc-100">
-        <img src={post.image} className="h-full w-full mix-blend-multiply" alt="img" />
+
+      <StarReviews stars={post.rating.rate} reviews={post.rating.count} />
+
+      <div className=" h-[180px] w-[160px]  mt-4 bg-zinc-100 ">
+        <img onClick={() => navigate("/products/" + id)} src={post.image} className="h-full w-full mix-blend-multiply cursor-pointer" alt="img" />
       </div>
 
       <div className="flex justify-between gap-3 items-center w-full mt-4">
@@ -41,7 +49,7 @@ const Product = ({ id, post }) => {
         </div>
 
         {
-          cart.some((p) => p.id === post.id) ?   //check if that item
+          cart.some((cartItems) => cartItems.item.id === post.id) ?   //check if that item
             (<button
               className="text-gray-700 border-2 border-gray-700 rounded-full font-semibold 
           text-[12px] p-1 px-3 uppercase 

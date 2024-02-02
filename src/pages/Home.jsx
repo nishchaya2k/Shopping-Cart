@@ -10,6 +10,8 @@ import { HiOutlineSearch } from "react-icons/hi";
 import { SlMenu } from "react-icons/sl";
 import { VscChromeClose } from "react-icons/vsc";
 import "./Home.css"
+import useFetch from "../hooks/useFetch";
+
 
 
 const sortbyData = [
@@ -26,10 +28,14 @@ const categories = [
 
 
 const Home = () => {
-  const data = useSelector((state) => {
-    console.log("state..", state.app);
-    return state.app;
-  });
+
+  //useFetch is a custom hook
+  const { data, loading } = useFetch('products');
+  console.log(data);
+  console.log(loading);
+
+
+
 
   //use to check weather Particular Filter is active or not
   const [active, setActive] = useState(false)
@@ -48,7 +54,7 @@ const Home = () => {
 
   useEffect(() => {
     if (data && sortby && active) {
-      const sorted = sortData(data?.posts, sortby.value);
+      const sorted = sortData(data, sortby.value);
       setSortedData(sorted)
       setActive(false);
       setSelectedCategory(null);
@@ -83,7 +89,7 @@ const Home = () => {
 
   useEffect(() => {
     if (data && priceRange && active) {   //only when slider is active, even if priceRange changed, becoz silder is active when user selects it, not when we reset it for the sake of giving default values
-      const filteredData = data?.posts?.filter(item => item.price >= priceRange[0] && item.price <= priceRange[1]);
+      const filteredData = data?.filter(item => item.price >= priceRange[0] && item.price <= priceRange[1]);
       setSliderData(filteredData);
       setActive(false);
       setSelectedCategory(null);
@@ -114,7 +120,7 @@ const Home = () => {
   useEffect(() => {
     console.log(selectedCategory); // Log updated value, to chech category updated or not
     if (data && selectedCategory && active) {
-      const filteredData = data?.posts?.filter((post) => post.category === selectedCategory)
+      const filteredData = data?.filter((post) => post.category === selectedCategory)
       setCategoryData(filteredData)
       defaultSortState();
       setActive(false);
@@ -161,8 +167,8 @@ const Home = () => {
     <div className="flex justify-center">
       <div className={`flex flex-col-reverse md:flex-row items-start gap-8 relative my-12`}>
         {
-          data?.loading ? <Spinner /> :
-            data?.posts?.length > 0 ?
+          loading ? <Spinner /> :
+            data?.length > 0 ?
               (
                 <div id="content-container" className={`w-11.5/12  grid xl:grid-cols-4 xl:max-w-[1111px] gap-x-8 gap-y-20 
                             xs: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:max-w-[800px] sm:max-w-[600px] max-w-[300px] ${mobileMenu ? 'filter blur-sm' : ''}`}>
@@ -170,14 +176,14 @@ const Home = () => {
                     (sortedData ?? sliderData ?? categoryData) ?
                       (
                         sortedData
-                          ? sortedData.map((post) => <Product key={post.id} post={post} />)
+                          ? sortedData.map((post) => <Product key={post.id} id={post.id} post={post} />)
                           : sliderData
-                            ? sliderData.map((post) => <Product key={post.id} post={post} />)
-                            : categoryData.map((post) => <Product key={post.id} post={post} />)
+                            ? sliderData.map((post) => <Product key={post.id} id={post.id} post={post} />)
+                            : categoryData.map((post) => <Product key={post.id} id={post.id} post={post} />)
                       )
                       :
-                      (data?.posts?.map((post) => (
-                        <Product key={post.id} post={post} />))
+                      (data?.map((post) => (
+                        <Product key={post.id} id={post.id} post={post} />))
                       )
                   }
                 </div>
@@ -189,7 +195,7 @@ const Home = () => {
 
         {/* Features ->  for large screen */}
         {
-          !data?.loading &&
+          !loading &&
 
           <div className={`md:flex flex-col items-start gap-[6.5rem] ${mobileMenu ? 'mobileView' : 'hidden'}`}>
             <SortOption sortby={sortby} sortbyData={sortbyData} onChange={onChange} />

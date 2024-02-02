@@ -14,7 +14,7 @@ const Cart = () => {
   const [totalAmount, setTotalAmount] = useState(0);
 
   useEffect(() => {
-    setTotalAmount(cart.reduce((acc, curr) => acc + curr.price, 0));
+    setTotalAmount(cart.reduce((acc, curr) => acc + (curr.item.price * curr.quantity), 0));
   }, [cart])
 
   return (
@@ -23,8 +23,8 @@ const Cart = () => {
         (<div className="flex xl:flex-row flex-col gap-12">
           <div className="xl:w-[60%] flex flex-col">
             {
-              cart.map((item, index) => {
-                return <CartItem key={item.id} item={item} itemIndex={index} />
+              cart.map((cartItem, index) => {
+                return <CartItem key={cartItem.item.id} post={cartItem.item} itemIndex={index} />
               })
             }
           </div>
@@ -38,7 +38,7 @@ const Cart = () => {
               </div>
 
               <p className="font-semibold sm:text-xl text-slate-700">
-                Total Items: {cart.length}
+                Total Items: {cart.reduce((total, cartItem) => total + cartItem.quantity, 0)}
               </p>
             </div>
             {/* checkout */}
@@ -69,8 +69,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
-
-/*The reduce method in JavaScript is used to transform an array into a single value.
-It iterates over each element of the array, applying a callback function that you 
-provide, and accumulating the result into a single value.*/
