@@ -11,6 +11,7 @@ import { SlMenu } from "react-icons/sl";
 import { VscChromeClose } from "react-icons/vsc";
 import "./Home.css"
 import useFetch from "../hooks/useFetch";
+import ShimmerCard from "../components/ShimmerCard/ShimmerCard";
 
 
 
@@ -167,10 +168,10 @@ const Home = () => {
     <div className="flex justify-center">
       <div className={`flex flex-col-reverse md:flex-row items-start gap-8 relative my-12`}>
         {
-          loading ? <Spinner /> :
+          loading ? <ShimmerCard /> :
             data?.length > 0 ?
               (
-                <div id="content-container" className={`w-11.5/12  grid xl:grid-cols-4 xl:max-w-[1111px] gap-x-8 gap-y-20 
+                <div id="content-container" className={`w-11.5/12 grid xl:grid-cols-4 xl:max-w-[1111px] gap-x-8 gap-y-20
                             xs: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:max-w-[800px] sm:max-w-[600px] max-w-[300px] ${mobileMenu ? 'filter blur-sm' : ''}`}>
                   {
                     (sortedData ?? sliderData ?? categoryData) ?
@@ -205,11 +206,15 @@ const Home = () => {
         }
 
         {/* Feature ->  for small screen */}
-        <div className={`md:hidden  ${mobileMenu ? 'w-full flex justify-end' : ''}`}>
-          {mobileMenu ?
-            (<VscChromeClose onClick={() => setMobileMenu(false)} className="cursor-pointer" />) :
-            (<SlMenu onClick={openMobileMenu} className="cursor-pointer" />)}  { /*we have open the sidebar  */}
-        </div>
+        {
+          !loading &&
+
+          <div className={`md:hidden  ${mobileMenu ? 'w-full flex justify-end' : ''}`}>
+            {mobileMenu ?
+              (<VscChromeClose onClick={() => setMobileMenu(false)} className="cursor-pointer" />) :
+              (<SlMenu onClick={openMobileMenu} className="cursor-pointer" />)}  { /*we have open the sidebar  */}
+          </div>
+        }
 
       </div>
     </div>
