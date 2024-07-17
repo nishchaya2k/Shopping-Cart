@@ -17,7 +17,7 @@ const FilterCategory = ({ selectedCategory, handleCategoryChange, unCheckButton,
                             type="radio"
                             value={value}
                             checked={selectedCategory === value}
-                            className='mx-1'
+                            className='mx-1 hover:cursor-pointer'
                             onChange={() => handleCategoryChange(value)}
                             onClick={unCheckButton}
                         />

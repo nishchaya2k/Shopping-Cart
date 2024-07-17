@@ -8,6 +8,7 @@ const customStyles = {
         border: '2px solid-black',
         borderRadius: '8px',
         boxShadow: null,
+        cursor: 'pointer'
     }),
 };
 
@@ -24,6 +25,7 @@ const SortOption = ({ sortby, sortbyData, onChange }) => {
                 placeholder="Sort by"
                 // className="react-select-container sortbyDD"
                 classNamePrefix="react-select"
+
                 styles={customStyles} // Apply custom styles
             />
         </div>

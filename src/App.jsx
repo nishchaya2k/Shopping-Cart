@@ -1,6 +1,6 @@
 import { Routes, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import Navbar from "./components/Navbar"
+import Navbar from "./components/Header/Navbar"
 import { Route } from "react-router-dom";
 import Home from "./pages/Home"
 import Cart from "./pages/Cart"

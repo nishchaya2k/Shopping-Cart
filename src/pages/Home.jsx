@@ -1,11 +1,11 @@
-import Spinner from "../components/Spinner";
-import Product from "../components/Product";
-import SortOption from "../components/SortOption";
+import Spinner from "../components/Spinner/Spinner";
+import Product from "../components/Body/Product";
+import SortOption from "../components/Filter/SortOption";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { sortData } from "../functions/sort";
-import SliderButton from "../components/SliderOption";
-import FilterCategory from "../components/FilterCategory";
+import SliderButton from "../components/Filter/SliderOption";
+import FilterCategory from "../components/Filter/FilterCategory";
 import { HiOutlineSearch } from "react-icons/hi";
 import { SlMenu } from "react-icons/sl";
 import { VscChromeClose } from "react-icons/vsc";

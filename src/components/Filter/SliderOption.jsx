@@ -16,6 +16,7 @@ const SliderButton = ({ priceRange, handleSliderChange, resetSlider, heading }) 
                     max={1000}
                     value={priceRange}
                     step={50}
+                    className='hover:cursor-pointer'
                     onChange={handleSliderChange}
                 />
                 <span className='flex justify-between'>

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import useFetch from '../../hooks/useFetch'
-import Product from '../../components/Product';
+import Product from '../../components/Body/Product';
 
 
 const RelatedProducts = ({ category, selectedPost }) => {

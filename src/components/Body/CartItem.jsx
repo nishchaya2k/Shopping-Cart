@@ -1,7 +1,7 @@
 
 import { MdDelete } from "react-icons/md";
 import { useDispatch } from "react-redux";
-import { remove } from "../redux/Slices/CartSlice";
+import { remove } from "../../redux/Slices/CartSlice";
 import { toast } from "react-hot-toast";
 
 const CartItem = ({ post, itemIndex }) => {

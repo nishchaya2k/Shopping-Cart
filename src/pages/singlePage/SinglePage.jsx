@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import useFetch from '../../hooks/useFetch';
-import Spinner from '../../components/Spinner';
+import Spinner from '../../components/Spinner/Spinner';
 import { useDispatch, useSelector } from "react-redux";
 import { add, remove } from "../../redux/Slices/CartSlice";
 import RelatedProducts from './RelatedProducts';
-import StarReviews from '../../components/StarReviews';
+import StarReviews from '../../components/Body/StarReviews';
 
 import {
     FaFacebookF,
