@@ -1,223 +1,188 @@
-import Spinner from "../components/Spinner/Spinner";
-import Product from "../components/Body/Product";
-import SortOption from "../components/Filter/SortOption";
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { sortData } from "../functions/sort";
-import SliderButton from "../components/Filter/SliderOption";
-import FilterCategory from "../components/Filter/FilterCategory";
-import { HiOutlineSearch } from "react-icons/hi";
-import { SlMenu } from "react-icons/sl";
-import { VscChromeClose } from "react-icons/vsc";
-import "./Home.css"
+import React, { useMemo, useState } from "react";
+import { FiSliders } from "react-icons/fi";
+
 import useFetch from "../hooks/useFetch";
-import ShimmerCard from "../components/ShimmerCard/ShimmerCard";
+import useProducts from "../hooks/useProducts";
 
+import Navbar from "../components/Header/Navbar";
+import ProductGrid from "../components/Body/ProductGrid";
+import FilterSidebar from "../components/Filter/FilterSidebar";
+import MobileFilterDrawer from "../components/Filter/MobileFilterDrawer";
+import SortOption from "../components/Filter/SortOption";
+import ActiveFilters from "../components/Filter/ActiveFilters";
+import Button from "../components/ui/Button";
 
+import { CATEGORIES } from "../config/categories";
 
-const sortbyData = [
-  { value: "asc", label: "Price(lowest)" },
-  { value: "desc", label: "Price(highest)" },
-];
-
-const categories = [
-  { category: "Female Clothing", value: "women's clothing" },
-  { category: "Male Clothing", value: "men's clothing" },
-  { category: "Jewelery", value: "jewelery" },
-  { category: "Electronics", value: "electronics" }
-];
-
-
+/**
+ * Storefront landing page.
+ *
+ * Layout (lg+):
+ *   ┌────────────┬───────────────────────────────────────────────┐
+ *   │            │ Page header (count + sort + active filters)    │
+ *   │  Sidebar   ├───────────────────────────────────────────────┤
+ *   │  (sticky)  │                                                │
+ *   │            │   Product grid                                 │
+ *   │            │                                                │
+ *   └────────────┴───────────────────────────────────────────────┘
+ *
+ * Below `lg` the sidebar collapses into a slide-in drawer triggered by the
+ * "Filters" button in the header row.
+ */
 const Home = () => {
+  const { data, loading } = useFetch("products");
+  const {
+    products,
+    visibleCount,
+    totalCount,
+    activeFilterCount,
+    filters,
+    actions,
+  } = useProducts(data);
 
-  //useFetch is a custom hook
-  const { data, loading } = useFetch('products');
-  console.log(data);
-  console.log(loading);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-
-
-
-  //use to check weather Particular Filter is active or not
-  const [active, setActive] = useState(false)
-
-  //in useEffect we have used active, becoz we dont want useEffect to update states unnecessarily becoz,
-  //whenever dependency of each useEffect get updated, states also get updated inside it, but we only want 
-  //states to get updated when that filter is active, not when we are reseting the states of other filters
-  //so at that time dependency value get change but we are not using that filter, so we need to take care,
-  //that we update states only when we using filter by making it active & deactivate it when u have used it.
-
-
-
-  //Sort
-  const [sortby, setSortby] = useState(null);
-  const [sortedData, setSortedData] = useState(null);
-
-  useEffect(() => {
-    if (data && sortby && active) {
-      const sorted = sortData(data, sortby.value);
-      setSortedData(sorted)
-      setActive(false);
-      setSelectedCategory(null);
-      setPriceRange(initialSliderState);
-      setCategoryData(null);
-      setSliderData(null);
-    }
-  }, [sortby])   //try to give two dependency dependent, so that we can avoid calling useEffect()
-
-  const defaultSortState = () => {
-    setSortedData(null);
-    setSortby(null);
-    setActive(false);
-  }
-
-  const onChange = (selectedItems, action) => {
-    if (action.action !== "clear") {
-      setSortby(selectedItems);
-      setActive(true);
-    }
-    else
-      defaultSortState();
-  }
-  //............................................................................. 
-
-
-  //Sider Price Filter
-  const initialSliderState = [0, 1000];
-  const [priceRange, setPriceRange] = useState(initialSliderState);
-  const [sliderData, setSliderData] = useState(null);
-
-
-  useEffect(() => {
-    if (data && priceRange && active) {   //only when slider is active, even if priceRange changed, becoz silder is active when user selects it, not when we reset it for the sake of giving default values
-      const filteredData = data?.filter(item => item.price >= priceRange[0] && item.price <= priceRange[1]);
-      setSliderData(filteredData);
-      setActive(false);
-      setSelectedCategory(null);
-      setSortby(null);
-      setCategoryData(null)
-      setSortedData(null);
-    }
-  }, [priceRange])
-
-  const handleSliderChange = (values) => {
-    setPriceRange(values);
-    setActive(true)
-  };
-
-  const resetSlider = () => {
-    setPriceRange(initialSliderState);
-    setSliderData(null);
-    setActive(false)
-  }
-  //............................................................................. 
-
-
-  //Category Wise Data
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [categoryData, setCategoryData] = useState(null);
-  const [checkCount, setCheckCount] = useState(0)
-
-  useEffect(() => {
-    console.log(selectedCategory); // Log updated value, to chech category updated or not
-    if (data && selectedCategory && active) {
-      const filteredData = data?.filter((post) => post.category === selectedCategory)
-      setCategoryData(filteredData)
-      defaultSortState();
-      setActive(false);
-      setSliderData(null);
-      setPriceRange(initialSliderState);
-    }
-  }, [selectedCategory]);
-
-  const handleCategoryChange = (value) => {
-    setSelectedCategory((prevValue) => {
-      console.log(prevValue); // Log previous value
-      return value; // Update state with the new value
+  // Pre-compute facet counts for the category filter
+  const facets = useMemo(() => {
+    const byCategory = {};
+    (data ?? []).forEach((p) => {
+      byCategory[p.category] = (byCategory[p.category] ?? 0) + 1;
     });
-    setActive(true);
-  };
-
-
-  const unCheckButton = () => {
-    setCheckCount((checkCount) => checkCount + 1);
-
-    if (checkCount % 2 === 0) {
-      setSelectedCategory(null);
-      setCategoryData(null);
-      setCheckCount(0);
-    }
-
-  }
-  //............................................................................. 
-
-  const [mobileMenu, setMobileMenu] = useState(false);   //for sidebar
-  const openMobileMenu = () => {
-    setMobileMenu(true)
-  }
-
-  useEffect(() => {
-    // Disable interactions with the content when the mobile menu is active
-    const contentContainer = document.getElementById("content-container");
-    if (contentContainer) {
-      contentContainer.style.pointerEvents = mobileMenu ? "none" : "auto";
-    }
-  }, [mobileMenu]);
+    return { byCategory };
+  }, [data]);
 
   return (
-    <div className="flex justify-center">
-      <div className={`flex flex-col-reverse md:flex-row items-start gap-8 relative my-12`}>
-        {
-          loading ? <ShimmerCard /> :
-            data?.length > 0 ?
-              (
-                <div id="content-container" className={`w-11.5/12 grid xl:grid-cols-4 xl:max-w-[1111px] gap-x-8 gap-y-20
-                            xs: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:max-w-[800px] sm:max-w-[600px] max-w-[300px] ${mobileMenu ? 'filter blur-sm' : ''}`}>
-                  {
-                    (sortedData ?? sliderData ?? categoryData) ?
-                      (
-                        sortedData
-                          ? sortedData.map((post) => <Product key={post.id} id={post.id} post={post} />)
-                          : sliderData
-                            ? sliderData.map((post) => <Product key={post.id} id={post.id} post={post} />)
-                            : categoryData.map((post) => <Product key={post.id} id={post.id} post={post} />)
-                      )
-                      :
-                      (data?.map((post) => (
-                        <Product key={post.id} id={post.id} post={post} />))
-                      )
-                  }
-                </div>
-              ) :
-              <div className="flex justify-center items-center">
-                <p>No Data Found</p>
+    <>
+      <Navbar
+        searchValue={filters.query}
+        onSearchChange={actions.setQuery}
+      />
+
+      <main className="container-page py-5 sm:py-6 lg:py-9">
+        {/* Hero / Page header */}
+        <header className="mb-6 flex flex-col gap-1.5 sm:mb-7 lg:mb-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-700">
+            New collection
+          </p>
+          <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl lg:text-[32px] lg:leading-[1.15]">
+                Discover everyday essentials
+              </h1>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-600">
+                A curated selection of clothing, accessories, jewelery and
+                electronics — from trusted brands, at fair prices.
+              </p>
+            </div>
+            <div className="hidden gap-2 lg:flex lg:flex-wrap lg:justify-end">
+              {CATEGORIES.slice(0, 4).map((c) => {
+                const active = filters.categories.includes(c.value);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => actions.toggleCategory(c.value)}
+                    aria-pressed={active}
+                    className={
+                      active
+                        ? "inline-flex h-8 items-center rounded-full bg-ink-900 px-3.5 text-xs font-medium text-white shadow-xs transition-transform duration-150 active:scale-[0.98]"
+                        : "inline-flex h-8 items-center rounded-full border border-ink-200/90 bg-white px-3.5 text-xs font-medium text-ink-700 transition-[border-color,background-color,transform] duration-150 hover:border-ink-300 hover:bg-ink-50 active:scale-[0.98]"
+                    }
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </header>
+
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+          {/* Desktop sticky sidebar */}
+          <div className="hidden w-[264px] flex-shrink-0 lg:block xl:w-[272px]">
+            <div className="sticky top-[4.75rem]">
+              <FilterSidebar
+                filters={filters}
+                actions={actions}
+                facets={facets}
+                hasActive={activeFilterCount > 0}
+              />
+            </div>
+          </div>
+
+          {/* Main column */}
+          <section className="min-w-0 flex-1">
+            <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
+              <p
+                className="text-sm text-ink-600"
+                role="status"
+                aria-live="polite"
+              >
+                {loading ? (
+                  <span className="inline-block h-4 w-40 skeleton rounded" />
+                ) : (
+                  <>
+                    Showing{" "}
+                    <span className="font-semibold text-ink-900">
+                      {visibleCount}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold text-ink-900">
+                      {totalCount}
+                    </span>{" "}
+                    products
+                  </>
+                )}
+              </p>
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-2.5">
+                <Button
+                  variant="secondary"
+                  size="md"
+                  leftIcon={<FiSliders className="h-4 w-4" />}
+                  onClick={() => setDrawerOpen(true)}
+                  className="lg:hidden"
+                >
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ink-900 px-1.5 text-[10px] font-semibold text-white">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+                <SortOption sortby={filters.sort} onChange={actions.setSort} />
               </div>
-        }
+            </div>
 
-        {/* Features ->  for large screen */}
-        {
-          !loading &&
+            <ActiveFilters
+              categories={filters.categories}
+              priceRange={filters.priceRange}
+              query={filters.query}
+              onRemoveCategory={actions.removeCategory}
+              onResetPrice={actions.resetPriceRange}
+              onClearQuery={() => actions.setQuery("")}
+              onClearAll={actions.resetAll}
+              className="mb-4 sm:mb-5"
+            />
 
-          <div className={`md:flex flex-col items-start gap-[6.5rem] ${mobileMenu ? 'mobileView' : 'hidden'}`}>
-            <SortOption sortby={sortby} sortbyData={sortbyData} onChange={onChange} />
-            <SliderButton priceRange={priceRange} handleSliderChange={handleSliderChange} resetSlider={resetSlider} heading="Price Range" />
-            <FilterCategory selectedCategory={selectedCategory} handleCategoryChange={handleCategoryChange} unCheckButton={unCheckButton} categories={categories} />
-          </div>
-        }
+            <ProductGrid
+              products={products}
+              loading={loading}
+              onResetFilters={actions.resetAll}
+            />
+          </section>
+        </div>
+      </main>
 
-        {/* Feature ->  for small screen */}
-        {
-          !loading &&
-
-          <div className={`md:hidden  ${mobileMenu ? 'w-full flex justify-end' : ''}`}>
-            {mobileMenu ?
-              (<VscChromeClose onClick={() => setMobileMenu(false)} className="cursor-pointer" />) :
-              (<SlMenu onClick={openMobileMenu} className="cursor-pointer" />)}  { /*we have open the sidebar  */}
-          </div>
-        }
-
-      </div>
-    </div>
+      <MobileFilterDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        filters={filters}
+        actions={actions}
+        facets={facets}
+        visibleCount={visibleCount}
+        hasActive={activeFilterCount > 0}
+      />
+    </>
   );
 };
 

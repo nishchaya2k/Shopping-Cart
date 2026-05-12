@@ -2,14 +2,122 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-surface-subtle text-ink-800 font-sans;
+    min-height: 100vh;
+    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+  }
+
+  /*
+   * Focus: use an offset ring on real controls (buttons, links, etc.).
+   * Do NOT put offset rings on native text fields — the ring follows the
+   * input box (sharp corners / wrong shape). Those use wrapper
+   * `focus-within:` styles (SearchBar, price fields, etc.).
+   */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
+    --tw-ring-opacity: 0.45;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply outline-none ring-0 ring-offset-0;
+    box-shadow: none;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    user-select: none;
+  }
 }
 
-body {
-  font-family: "Poppins", sans-serif;
-  min-height: 100vh;
-  background-color: #fff;
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-[1400px] px-4 sm:px-5 lg:px-7 xl:px-8;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden bg-ink-100;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+    background-size: 400px 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+
+  /* Hide scrollbar utility (used in horizontal product rows) */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+}
+
+/* rc-slider — premium, low-contrast rail; brand track */
+.rc-slider-rail {
+  background-color: #e2e8f0 !important;
+  height: 3px !important;
+  border-radius: 9999px !important;
+}
+.rc-slider-track {
+  background-color: #10b981 !important;
+  height: 3px !important;
+  border-radius: 9999px !important;
+}
+.rc-slider-handle {
+  border: 2px solid #ffffff !important;
+  background-color: #10b981 !important;
+  box-shadow:
+    0 0 0 1px rgb(16 185 129 / 0.35),
+    0 1px 2px rgb(15 23 42 / 0.08),
+    0 2px 6px -1px rgb(15 23 42 / 0.1) !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-top: -6.5px !important;
+  opacity: 1 !important;
+}
+.rc-slider-handle:hover {
+  background-color: #059669 !important;
+}
+.rc-slider-handle:focus-visible,
+.rc-slider-handle-dragging.rc-slider-handle-dragging.rc-slider-handle-dragging {
+  border-color: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgb(16 185 129 / 0.45),
+    0 0 0 4px rgb(16 185 129 / 0.16) !important;
 }

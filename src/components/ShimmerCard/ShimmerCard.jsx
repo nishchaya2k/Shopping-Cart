@@ -1,37 +1,45 @@
-import { IoIosStarOutline } from "react-icons/io";
+import React from "react";
+import Skeleton from "../ui/Skeleton";
 
-const ShimmerCard = () => {
-    return (
-        <div className=" m-auto  md:w-9/12 max-sm:w-8/12 flex flex-wrap gap-8 md:ml-20 overflow-x-scroll">
-            {Array.from({ length: 10 }, (_, i) => {
-                return (
-                    <div
-                        key={i}
-                        className="max-md:m-auto w-full md:w-[240px] h-[410px] rounded-3xl flex flex-col gap-2 flex-shrink-0 shadow-md  hover:scale-[0.99] transition-all duration-500 ease-in-out bg-[#d8e3e9] animate-pulse"
-                    >
-                        <div className="w-full h-[40%] flex flex-col gap-3 p-2 pt-4">
-                            <div className="w-full h-8 bg-[#fbfbfb] rounded-2xl"></div>
-                            <div className="w-5/6 h-8 bg-[#fbfbfb] rounded-2xl"></div>
+/**
+ * Single skeleton card whose silhouette matches the real ProductCard
+ * (aspect-[4/5] image area + padded body). Render N of these inside the
+ * same grid the products live in for a seamless loading state.
+ */
+export const ProductCardSkeleton = () => (
+  <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200/70 bg-white shadow-card">
+    <Skeleton className="aspect-[4/5] w-full shrink-0" rounded="rounded-none" />
+    <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-3">
+      <div className="flex items-center justify-between gap-2">
+        <Skeleton className="h-3 w-14" />
+        <Skeleton className="h-3 w-16" />
+      </div>
+      <Skeleton className="h-4 w-full max-w-[92%]" />
+      <Skeleton className="h-4 w-3/5" />
+      <div className="flex gap-1 pt-0.5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-3 w-3" rounded="rounded-sm" />
+        ))}
+      </div>
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink-100 pt-3">
+        <Skeleton className="h-5 w-20" />
+        <Skeleton className="h-9 w-[4.5rem]" rounded="rounded-lg" />
+      </div>
+    </div>
+  </div>
+);
 
-                            <div className="w-full h-10 flex justify-start items-center gap-4 pl-2 text-xl">
-                                <IoIosStarOutline className="text-[#ffffff]" />
-                                <IoIosStarOutline className="text-[#ffffff]" />
-                                <IoIosStarOutline className="text-[#ffffff]" />
-                                <IoIosStarOutline className="text-[#ffffff]" />
-                                <IoIosStarOutline className="text-[#ffffff]" />
-
-                            </div>
-                        </div>
-                        <div className="w-11/12 m-auto h-2/3 overflow-hidden bg-[#fbfbfb] rounded-2xl"></div>
-                        <div className="w-full h-10 rounded-2xl pb-10 p-2 flex justify-end">
-
-                            <div className="w-[50%] h-8 bg-[#fbfbfb] rounded-2xl"></div>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-    );
-};
+/**
+ * Backwards-compatible default export. Renders a grid of skeleton cards
+ * with the same column rules as the real product grid so the UI doesn't
+ * shift when data arrives.
+ */
+const ShimmerCard = ({ count = 8 }) => (
+  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 md:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+    {Array.from({ length: count }).map((_, i) => (
+      <ProductCardSkeleton key={i} />
+    ))}
+  </div>
+);
 
 export default ShimmerCard;

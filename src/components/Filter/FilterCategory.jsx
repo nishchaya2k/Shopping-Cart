@@ -1,33 +1,28 @@
-import React, { useState } from 'react';
+import React from "react";
+import Checkbox from "../ui/Checkbox";
 
-const FilterCategory = ({ selectedCategory, handleCategoryChange, unCheckButton, categories }) => {
-
-
-
-    return (
-        <div className='mx-2'>
-            <span className="flex flex-col mb-8">
-                <span className="text-md">Categories</span>
-                <span className="w-14 bg-black h-0.5"></span>
-            </span>
-            <div className='flex flex-col gap-2'>
-                {categories.map(({ category, value }) => (  //with each category we have lable and radio button associated
-                    <label key={value}>
-                        <input
-                            type="radio"
-                            value={value}
-                            checked={selectedCategory === value}
-                            className='mx-1 hover:cursor-pointer'
-                            onChange={() => handleCategoryChange(value)}
-                            onClick={unCheckButton}
-                        />
-                        {category}
-                    </label>
-                ))}
-
-            </div>
-        </div>
-    );
-};
+/**
+ * Multi-select category filter (replaces the legacy single-radio version).
+ *
+ * Props:
+ * - categories: [{ id, label, value }]
+ * - selected: string[]   currently selected category `value`s
+ * - onToggle: (value: string) => void
+ * - getCount: (value: string) => number   optional facet count
+ */
+const FilterCategory = ({ categories, selected = [], onToggle, getCount }) => (
+  <div role="group" aria-label="Categories" className="flex flex-col gap-0.5">
+    {categories.map((category) => (
+      <Checkbox
+        key={category.id}
+        id={`cat-${category.id}`}
+        label={category.label}
+        checked={selected.includes(category.value)}
+        onChange={() => onToggle(category.value)}
+        count={getCount ? getCount(category.value) : undefined}
+      />
+    ))}
+  </div>
+);
 
 export default FilterCategory;

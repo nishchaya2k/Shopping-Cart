@@ -1,43 +1,32 @@
-import { Routes, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
-import Navbar from "./components/Header/Navbar"
-import { Route } from "react-router-dom";
-import Home from "./pages/Home"
-import Cart from "./pages/Cart"
-import { useDispatch, useSelector } from 'react-redux';
-import { getAllData } from "./redux/Slices/DataSlice";
+import React, { useEffect } from "react";
+import { Route, Routes } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import Home from "./pages/Home";
+import Cart from "./pages/Cart";
+import Wishlist from "./pages/Wishlist";
 import SinglePage from "./pages/singlePage/SinglePage";
+import { getAllData } from "./redux/Slices/DataSlice";
 
-
-
+/**
+ * Root layout. Each route owns its own Navbar so the navbar can wire
+ * page-specific state (e.g. the Home page passes the search value into it).
+ */
 const App = () => {
-
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllData());   //with this action will be performed defined in DataSlice file and if no error found data is stored in posts variable declared in DataSlice
-  }, [])
-
-  useEffect(() => {
-    dispatch(getAllData("/1"));   //with this action will be performed defined in DataSlice file and if no error found data is stored in posts variable declared in DataSlice
-
-  }, [])
+    dispatch(getAllData());
+  }, [dispatch]);
 
   return (
-    <div>
-      <div className="bg-slate-900">
-        <Navbar />
-      </div>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        {/* <Route path="/" element={<Home loading={loading} posts={posts} setPosts={setPosts} />} /> */}
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/products/:id" element={<SinglePage />} />
-      </Routes>
-    </div>)
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/wishlist" element={<Wishlist />} />
+      <Route path="/products/:id" element={<SinglePage />} />
+    </Routes>
+  );
 };
 
 export default App;
-
-
-

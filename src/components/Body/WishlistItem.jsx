@@ -2,22 +2,28 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { FiTrash2 } from "react-icons/fi";
+import { FiHeart } from "react-icons/fi";
 
 import IconButton from "../ui/IconButton";
-import { remove } from "../../redux/Slices/CartSlice";
+import Button from "../ui/Button";
+import { add } from "../../redux/Slices/CartSlice";
+import { toggleWishlist } from "../../redux/Slices/WishlistSlice";
 import { formatCategoryLabel, formatCurrency, truncate } from "../../utils/format";
 
 /**
- * Single line-item inside the cart list.
- * Layout: image | title + meta | price + remove button.
+ * One saved product on the wishlist page (mirrors cart line item layout).
  */
-const CartItem = ({ post }) => {
+const WishlistItem = ({ post }) => {
   const dispatch = useDispatch();
 
-  const removeFromCart = () => {
-    dispatch(remove({ post }));
-    toast.success("Item removed");
+  const removeFromWishlist = () => {
+    dispatch(toggleWishlist(post.id));
+    toast.success("Removed from wishlist");
+  };
+
+  const addToCart = () => {
+    dispatch(add({ post, quantity: 1 }));
+    toast.success("Added to cart");
   };
 
   return (
@@ -47,23 +53,33 @@ const CartItem = ({ post }) => {
         <p className="hidden text-xs text-ink-500 sm:block">
           {truncate(post.description, 100)}
         </p>
+        <div className="mt-1 flex flex-wrap gap-2 sm:hidden">
+          <Button variant="secondary" size="sm" onClick={addToCart}>
+            Add to cart
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col items-end gap-3">
         <span className="text-base font-semibold tabular-nums text-ink-900 sm:text-lg">
           {formatCurrency(post.price)}
         </span>
+        <div className="hidden flex-col gap-2 sm:flex">
+          <Button variant="secondary" size="sm" onClick={addToCart}>
+            Add to cart
+          </Button>
+        </div>
         <IconButton
           variant="outline"
           size="sm"
-          aria-label={`Remove ${post.title} from cart`}
-          onClick={removeFromCart}
+          aria-label={`Remove ${post.title} from wishlist`}
+          onClick={removeFromWishlist}
         >
-          <FiTrash2 className="h-4 w-4" />
+          <FiHeart className="h-4 w-4 fill-red-500 text-red-500" />
         </IconButton>
       </div>
     </div>
   );
 };
 
-export default CartItem;
+export default WishlistItem;

@@ -1,71 +1,135 @@
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { FiArrowRight, FiShoppingBag } from "react-icons/fi";
+
+import Navbar from "../components/Header/Navbar";
 import CartItem from "../components/Body/CartItem";
+import Button from "../components/ui/Button";
+import EmptyState from "../components/Body/EmptyState";
+import { formatCurrency } from "../utils/format";
 
-
-
+const SHIPPING_THRESHOLD = 50;
+const SHIPPING_FEE = 5.99;
+const TAX_RATE = 0.08;
 
 const Cart = () => {
-
   const { cart } = useSelector((state) => state.cart);
-  console.log("Printing Cart");
-  console.log(cart);
-  const [totalAmount, setTotalAmount] = useState(0);
 
-  useEffect(() => {
-    setTotalAmount(cart.reduce((acc, curr) => acc + (curr.item.price * curr.quantity), 0));
-  }, [cart])
+  const totals = useMemo(() => {
+    const itemCount = cart.reduce((acc, c) => acc + c.quantity, 0);
+    const subtotal = cart.reduce(
+      (acc, c) => acc + c.item.price * c.quantity,
+      0,
+    );
+    const shipping = subtotal >= SHIPPING_THRESHOLD || subtotal === 0 ? 0 : SHIPPING_FEE;
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal + shipping + tax;
+    return { itemCount, subtotal, shipping, tax, total };
+  }, [cart]);
 
   return (
-    <div className="flex items-center justify-center w-11/12 max-w-[1200] min-h-[80vh] mx-auto py-6">
-      {cart.length > 0 ?
-        (<div className="flex xl:flex-row flex-col gap-12">
-          <div className="xl:w-[60%] flex flex-col">
-            {
-              cart.map((cartItem, index) => {
-                return <CartItem key={cartItem.item.id} post={cartItem.item} itemIndex={index} />
-              })
-            }
-          </div>
+    <>
+      <Navbar />
+      <main className="container-page py-8 lg:py-12">
+        <header className="mb-8 flex flex-col gap-1">
+          <h1 className="text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
+            Your cart
+          </h1>
+          <p className="text-sm text-ink-500">
+            {totals.itemCount === 0
+              ? "Your cart is empty."
+              : `${totals.itemCount} item${totals.itemCount === 1 ? "" : "s"} ready for checkout.`}
+          </p>
+        </header>
 
-          <div className="xl:w-[40%] flex flex-col justify-between py-16 pb-14 px-2 gap-5">
-            {/* cart summary */}
-            <div className="flex flex-col sm:gap-5">
-              <div className="flex flex-col ">
-                <p className="sm:text-xl text-green-800 font-semibold uppercase ">Your Cart</p>
-                <p className="sm:text-[50px] text-green-700 font-semibold uppercase sm:mt-2 text-3xl">Summary</p>
+        {cart.length > 0 ? (
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <section
+              aria-label="Cart items"
+              className="rounded-2xl border border-ink-200/80 bg-white shadow-card lg:col-span-2"
+            >
+              <ul className="divide-y divide-ink-200/70">
+                {cart.map((cartItem, index) => (
+                  <li key={cartItem.item.id} className="px-5 py-5 sm:px-6">
+                    <CartItem post={cartItem.item} itemIndex={index} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <aside
+              aria-label="Order summary"
+              className="h-fit rounded-2xl border border-ink-200/80 bg-white p-6 shadow-card lg:sticky lg:top-24"
+            >
+              <h2 className="text-base font-semibold tracking-tight text-ink-900">
+                Order summary
+              </h2>
+              <dl className="mt-4 flex flex-col gap-3 text-sm">
+                <SummaryRow label="Subtotal" value={formatCurrency(totals.subtotal)} />
+                <SummaryRow
+                  label={
+                    totals.shipping === 0
+                      ? "Shipping"
+                      : `Shipping (${formatCurrency(totals.subtotal)} · under ${formatCurrency(SHIPPING_THRESHOLD)})`
+                  }
+                  value={
+                    totals.shipping === 0 ? (
+                      <span className="font-medium text-brand-700">Free</span>
+                    ) : (
+                      formatCurrency(totals.shipping)
+                    )
+                  }
+                />
+                <SummaryRow
+                  label={`Tax (${Math.round(TAX_RATE * 100)}%)`}
+                  value={formatCurrency(totals.tax)}
+                />
+              </dl>
+              <div className="my-4 h-px w-full bg-ink-200" />
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm font-medium text-ink-700">Total</span>
+                <span className="text-2xl font-bold tracking-tight text-ink-900 tabular-nums">
+                  {formatCurrency(totals.total)}
+                </span>
               </div>
-
-              <p className="font-semibold sm:text-xl text-slate-700">
-                Total Items: {cart.reduce((total, cartItem) => total + cartItem.quantity, 0)}
+              <Button
+                variant="brand"
+                size="lg"
+                fullWidth
+                className="mt-5"
+                rightIcon={<FiArrowRight className="h-4 w-4" />}
+              >
+                Checkout
+              </Button>
+              <p className="mt-3 text-center text-xs text-ink-500">
+                Free shipping on orders above {formatCurrency(SHIPPING_THRESHOLD)}.
               </p>
-            </div>
-            {/* checkout */}
-            <div className="flex flex-col gap-5">
-              <p className="font-semibold sm:text-xl text-slate-700">Total Amount: ${totalAmount}</p>
-              <button className="w-full sm:py-3 bg-green-700 text-white uppercase font-bold rounded-md 
-                                text-[17px] border-green-700 border-2 hover:bg-white hover:text-green-700 py-1" >
-                Checkout Now
-              </button>
-            </div>
-
+            </aside>
           </div>
-
-        </div>) :
-
-        (<div className="flex flex-col items-center justify-center gap-y-7">
-          <p className="font-semibold text-xl">cart is empty!</p>
-          <Link to={"/"}>
-            <button className="px-10 py-3 bg-green-600 text-white uppercase font-semibold rounded-md text-[17px] border-green-600 
-                    hover:bg-white hover:text-green-600">
-              Shop Now
-            </button>
-          </Link>
-        </div>)
-      }
-    </div>
+        ) : (
+          <EmptyState
+            title="Your cart is empty"
+            description="Looks like you haven't added anything yet. Explore our latest collection to get started."
+            icon={<FiShoppingBag className="h-5 w-5" />}
+          >
+            <Link to="/">
+              <Button variant="brand" size="md">
+                Continue shopping
+              </Button>
+            </Link>
+          </EmptyState>
+        )}
+      </main>
+    </>
   );
 };
+
+const SummaryRow = ({ label, value }) => (
+  <div className="flex items-baseline justify-between gap-4 text-ink-600">
+    <dt className="truncate">{label}</dt>
+    <dd className="text-ink-900 tabular-nums">{value}</dd>
+  </div>
+);
 
 export default Cart;

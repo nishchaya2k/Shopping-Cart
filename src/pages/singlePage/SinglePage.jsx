@@ -1,159 +1,276 @@
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import useFetch from '../../hooks/useFetch';
-import Spinner from '../../components/Spinner/Spinner';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { add, remove } from "../../redux/Slices/CartSlice";
-import RelatedProducts from './RelatedProducts';
-import StarReviews from '../../components/Body/StarReviews';
-
+import { toast } from "react-hot-toast";
 import {
-    FaFacebookF,
-    FaTwitter,
-    FaInstagram,
-    FaLinkedinIn,
-    FaPinterest,
-    FaCartPlus,
+  FiCheck,
+  FiHeart,
+  FiMinus,
+  FiPlus,
+  FiShoppingBag,
+} from "react-icons/fi";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaPinterest,
+  FaTwitter,
 } from "react-icons/fa";
 
+import useFetch from "../../hooks/useFetch";
+import { add, remove } from "../../redux/Slices/CartSlice";
+import { toggleWishlist } from "../../redux/Slices/WishlistSlice";
+
+import Navbar from "../../components/Header/Navbar";
+import RatingStars from "../../components/Body/StarReviews";
+import RelatedProducts from "./RelatedProducts";
+import Skeleton from "../../components/ui/Skeleton";
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import IconButton from "../../components/ui/IconButton";
+import { cn } from "../../utils/cn";
+import { formatCategoryLabel, formatCurrency } from "../../utils/format";
+import {
+  getDiscountPercent,
+  getOriginalPrice,
+  getStockState,
+} from "../../utils/productMeta";
+
+const SOCIAL_LINKS = [
+  { icon: FaFacebookF, label: "Share on Facebook" },
+  { icon: FaTwitter, label: "Share on Twitter" },
+  { icon: FaInstagram, label: "Share on Instagram" },
+  { icon: FaLinkedinIn, label: "Share on LinkedIn" },
+  { icon: FaPinterest, label: "Share on Pinterest" },
+];
+
 const SinglePage = () => {
+  const { id } = useParams();
+  const { data: post, loading } = useFetch(`products/${id}`);
+  const dispatch = useDispatch();
+  const { cart } = useSelector((state) => state.cart);
+  const wishlistIds = useSelector((state) => state.wishlist?.ids ?? []);
 
-    useEffect(() => {
-        window.scroll(0, 0);
-    }, [])
+  const [quantity, setQuantity] = useState(1);
 
-    const { cart } = useSelector((state) => state.cart);
-    const dispatch = useDispatch();
+  useEffect(() => {
+    window.scroll(0, 0);
+  }, [id]);
 
+  const inCart = post && cart.some((entry) => entry.item.id === post.id);
+  const inWishlist = post && wishlistIds.includes(post.id);
+  const stock = post ? getStockState(post) : null;
+  const discount = post ? getDiscountPercent(post) : 0;
+  const originalPrice = post ? getOriginalPrice(post) : null;
+  const outOfStock = stock?.tone === "danger";
 
-    const { id } = useParams();
-
-    /*as for standard naming, data is used for all the posts information, so for 1 post I can't
-    use data so I assign it to post, its advisable to use proper naming convention in whole app*/
-
-    //post is a new variable, not a reference to the data property in the obj object
-    const { data: post, loading } = useFetch("products/" + id);
-    const [quantity, setQuantity] = useState(1);
-
-    const increment = () => {
-        setQuantity((prev) => prev + 1);
+  const addToCart = () => {
+    if (!post || outOfStock) return;
+    if (inCart) {
+      dispatch(remove({ post }));
+      toast("Removed from cart", { icon: "🗑️" });
+    } else {
+      dispatch(add({ post, quantity }));
+      toast.success(`Added ${quantity} × to cart`);
+      setQuantity(1);
     }
+  };
 
-    const decrement = () => {
-        setQuantity((prevState) => {
-            if (prevState === 1) return 1;
-            return prevState - 1;
-        });
-    }
+  return (
+    <>
+      <Navbar />
+      <main className="container-page py-6 lg:py-12">
+        {loading || !post ? (
+          <DetailSkeleton />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-8 rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card lg:grid-cols-2 lg:gap-12 lg:p-10">
+              <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-gradient-to-b from-ink-50 to-ink-100">
+                {discount > 0 && (
+                  <Badge tone="danger" size="md" className="absolute left-4 top-4">
+                    −{discount}%
+                  </Badge>
+                )}
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  className="max-h-[78%] max-w-[78%] object-contain mix-blend-multiply"
+                />
+              </div>
 
-    const addToCart = () => {
-        if (post) {
-            dispatch(add({ post, quantity }));  //sending quantity also so that we can update cart acc. to it
-            // toast.success("Item added to Cart");
-        }
-    }
+              <div className="flex flex-col">
+                <span className="text-2xs font-medium uppercase tracking-[0.18em] text-brand-700">
+                  {formatCategoryLabel(post.category)}
+                </span>
+                <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
+                  {post.title}
+                </h1>
+                <div className="mt-3 flex items-center gap-3">
+                  <RatingStars
+                    stars={post.rating?.rate}
+                    reviews={post.rating?.count}
+                    size="md"
+                  />
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 text-xs font-medium",
+                      stock.tone === "success" && "text-brand-700",
+                      stock.tone === "warning" && "text-amber-700",
+                      stock.tone === "danger" && "text-red-600",
+                    )}
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        stock.tone === "success" && "bg-brand-500",
+                        stock.tone === "warning" && "bg-amber-500",
+                        stock.tone === "danger" && "bg-red-500",
+                      )}
+                    />
+                    {stock.label}
+                  </span>
+                </div>
 
-    !loading && console.log(post);
+                <div className="mt-5 flex items-baseline gap-3">
+                  <span className="text-3xl font-bold tracking-tight text-ink-900 tabular-nums">
+                    {formatCurrency(post.price)}
+                  </span>
+                  {originalPrice && (
+                    <span className="text-base text-ink-400 line-through tabular-nums">
+                      {formatCurrency(originalPrice)}
+                    </span>
+                  )}
+                </div>
 
-    return (
-        <div>
-            {/*to make spinner in center I used flex here */}
-            <section className='m-6 sm:m-20 flex justify-center'>
-                {
+                <p className="mt-5 text-sm leading-relaxed text-ink-600 sm:text-base">
+                  {post.description}
+                </p>
 
-                    loading ? <Spinner /> :
-                        <div className='max-w-[calc(100%-20px)] md:max-w-full m-auto '>
-                            <div className='flex flex-col md:flex-row gap-10'>
-                                {/* left */}
+                <div className="mt-7 flex items-stretch gap-3">
+                  <div className="inline-flex h-12 items-center rounded-xl border border-ink-200 bg-white">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      aria-label="Decrease quantity"
+                      className="inline-flex h-full w-11 items-center justify-center text-ink-600 transition-colors hover:text-ink-900 disabled:opacity-50"
+                      disabled={quantity <= 1}
+                    >
+                      <FiMinus className="h-4 w-4" />
+                    </button>
+                    <span className="min-w-[2ch] text-center text-sm font-semibold tabular-nums text-ink-900">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => q + 1)}
+                      aria-label="Increase quantity"
+                      className="inline-flex h-full w-11 items-center justify-center text-ink-600 transition-colors hover:text-ink-900"
+                    >
+                      <FiPlus className="h-4 w-4" />
+                    </button>
+                  </div>
 
-                                <div className='w-[70%] h-[70%] m-auto md:h-[500px] md:w-[50%] lg:w-[40%]'>
-                                    <img className='w-full h-full block' src={post.image} />
-                                </div>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={addToCart}
+                    disabled={outOfStock}
+                    leftIcon={
+                      inCart ? (
+                        <FiCheck className="h-4 w-4" />
+                      ) : (
+                        <FiShoppingBag className="h-4 w-4" />
+                      )
+                    }
+                    className="flex-1"
+                  >
+                    {outOfStock
+                      ? "Out of stock"
+                      : inCart
+                        ? "Remove from cart"
+                        : "Add to cart"}
+                  </Button>
 
-                                {/* right */}
-                                <div className='flex flex-col md:w-[50%] lg:w-[60%]'>
-                                    <span className='text-[20px] leading-[28px] md:text-[24px] md:leading-[32px] mb-5'>{post.title}</span>
-                                    <div className='mb-4'><StarReviews stars={post.rating.rate} reviews={post.rating.count} /></div>
-                                    <span className='text-[24px] leading-[32px] mb-5'>&#8377;{post.price}</span>
-                                    <span className='text-[14px] leading-[20px] md:text-[16px] md:leading-[24px] mb-5 text-gray-500'>{post.description}</span>
+                  <IconButton
+                    variant="outline"
+                    size="lg"
+                    aria-label={
+                      inWishlist ? "Remove from wishlist" : "Add to wishlist"
+                    }
+                    aria-pressed={inWishlist}
+                    onClick={() => dispatch(toggleWishlist(post.id))}
+                  >
+                    <FiHeart
+                      className={cn(
+                        "h-5 w-5 transition-colors",
+                        inWishlist
+                          ? "fill-red-500 text-red-500"
+                          : "text-ink-700",
+                      )}
+                    />
+                  </IconButton>
+                </div>
 
-                                    {/* cart Buttons */}
-                                    <div className='flex md:mt-8 '>
-                                        <div className="flex w-fit h-12 mr-[10px] border-2 border-slate-300">
-                                            <span className='w-[30px] sm:w-[40px] text-[18px] flex justify-center items-center cursor-pointer text-slate-500' onClick={decrement} >-</span>
-                                            <span className='w-[45px] sm:w-[60px] text-[18px] flex justify-center items-center border-r-2 border-l-2 border-slate-300 text-slate-600'>{quantity}</span>
-                                            <span className='w-[30px] sm:w-[40px] text-[18px] flex justify-center items-center cursor-pointer text-slate-500' onClick={increment}>+</span>
-                                        </div>
-                                        <button onClick={() => {
-                                            addToCart(post, quantity)
-                                            setQuantity(1);
-                                        }}
-                                            className='text-[13px] sm:text-[15px] flex justify-center items-center cursor-pointer gap-1 p-2 h-12 text-white bg-purple-700 outline-none border-0 border-b-4 border-purple-900 w-[200px]'>
+                <div className="mt-8 grid grid-cols-1 gap-3 border-t border-ink-200 pt-6 sm:grid-cols-2">
+                  <InfoRow label="Category">
+                    <span className="capitalize">{formatCategoryLabel(post.category)}</span>
+                  </InfoRow>
+                  <InfoRow label="Share">
+                    <span className="inline-flex items-center gap-2">
+                      {SOCIAL_LINKS.map(({ icon: Icon, label }) => (
+                        <IconButton
+                          key={label}
+                          variant="ghost"
+                          size="sm"
+                          aria-label={label}
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                        </IconButton>
+                      ))}
+                    </span>
+                  </InfoRow>
+                </div>
+              </div>
+            </div>
 
-                                            <FaCartPlus size={20} />
-                                            ADD TO CART
-                                        </button>
-                                    </div>
+            <RelatedProducts
+              ProductId={post.id}
+              category={post.category}
+              selectedPost={post}
+            />
+          </>
+        )}
+      </main>
+    </>
+  );
+};
 
-                                    {/* divider */}
-                                    <div className='m-5 h-[1px] w-full bg-slate-200'></div>
+const InfoRow = ({ label, children }) => (
+  <div className="flex items-center gap-2 text-sm">
+    <span className="text-2xs font-medium uppercase tracking-wider text-ink-500">
+      {label}
+    </span>
+    <span className="text-ink-700">{children}</span>
+  </div>
+);
 
-                                    {/*Product-info */}
-                                    <div className='flex flex-col items-start gap-2'>
+const DetailSkeleton = () => (
+  <div className="grid grid-cols-1 gap-8 rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card lg:grid-cols-2 lg:gap-12 lg:p-10">
+    <Skeleton className="aspect-square w-full" rounded="rounded-xl" />
+    <div className="flex flex-col gap-4">
+      <Skeleton className="h-3 w-24" />
+      <Skeleton className="h-8 w-5/6" />
+      <Skeleton className="h-4 w-1/3" />
+      <Skeleton className="h-9 w-1/2" />
+      <Skeleton className="h-20 w-full" />
+      <div className="flex gap-3">
+        <Skeleton className="h-12 w-32" rounded="rounded-xl" />
+        <Skeleton className="h-12 flex-1" rounded="rounded-xl" />
+        <Skeleton className="h-12 w-12" rounded="rounded-xl" />
+      </div>
+    </div>
+  </div>
+);
 
-                                        <div className='flex justify-center items-center gap-1'>
-                                            <span className='text-[18px] font-medium'>
-                                                Category:{'  '}
-                                            </span>
-                                            <span className='capitalize text-[16px] font-normal cursor-pointer text-gray-500'>{post.category}</span>
-                                        </div>
-
-                                        <div className='flex justify-center items-center '>
-                                            <span className='text-[18px] font-medium'>
-                                                Share:{'  '}
-                                            </span>
-                                            <span className='flex justify-center items-center gap-2 text-[16px] font-normal cursor-pointer text-gray-500'>
-                                                <FaFacebookF size={16} />
-                                                <FaTwitter size={16} />
-                                                <FaInstagram size={16} />
-                                                <FaLinkedinIn size={16} />
-                                                <FaPinterest size={16} />
-                                            </span>
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <RelatedProducts ProductId={post.id} category={post.category} selectedPost={post} />
-
-                        </div>
-                }
-            </section>
-        </div>
-    )
-}
-
-export default SinglePage
-
-
-/*
-
-1. flex-shrink: The flex-shrink property specifies how the item will shrink relative to the rest
-                of the flexible items inside the same container
-
-               The default value for the flex-shrink property is 1. This means that flex items
-                can shrink proportionally if necessary
-
-2. Flex-grow: The flex-grow property is a sub-property of the Flexible Box Layout module.
-              It defines the ability for a flex item to grow if necessary.
-              It dictates what amount of the available space inside the flex container the item
-              should take up. eg. flex-grow: 2;
-
-              For example, if all items have flex-grow set to 1, every child will set to an
-              equal size inside the container. If you were to give one of the children a value
-              of 2, that child would take up twice as much space as the others.
-
-
-*/
+export default SinglePage;
